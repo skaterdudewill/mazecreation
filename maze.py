@@ -22,7 +22,13 @@ from PIL import Image
 width = 20
 height = 20
 
-
+counter=419
+'''
+for i in range(60):
+	image=cv2.imread("maze418.png",1)
+	cv2.imwrite("maze%03d.png" % counter, image)
+	counter+=1
+'''
 def rbtGeneration():
 	print('Creating Maze')
 	img = np.zeros((height * 2 + 1, width * 2 + 1), dtype=np.uint8)
@@ -40,8 +46,8 @@ def rbtGeneration():
 		# colorImg[y,x]=(255,0,0)
 		counter = 0
 		for jy, jx in prevLocations[len(prevLocations)::-1]:
-			colorImg[y, x] = (255, 255, 0)
-			colorImg[jy, jx] = (counter, counter, 255)
+			colorImg[y,x]=(128,0,128)
+			colorImg[jy,jx]=(counter,255,counter)
 			counter += 1
 
 		possibleNeighbors = []
@@ -105,8 +111,8 @@ def binaryGeneration():
 		while x > 0:
 			counter=0
 			for jy,jx in prevLocations[len(prevLocations)::-1]:
-				colorImg[y,x]=(255,255,0)
-				colorImg[jy,jx]=(counter,counter,255)
+				colorImg[y,x]=(128,0,128)
+				colorImg[jy,jx]=(counter,160,counter)
 				counter+=1
 			img[y,x]=255
 			rand = random.randint(0,1)
@@ -163,53 +169,48 @@ def binaryGeneration():
 
 x=1
 y=1
-image = cv2.imread("binaryMaze.png")
+image = cv2.cvtColor(rbtGeneration(),cv2.COLOR_GRAY2BGR)
 correctPath = image
 followImg = image
 wasHere= np.zeros((height*2+1,width*2+1))
 counting=0
-
-
-def mazeSolver(x,y):
-	global counting
+def mazeSolver(x,y,dir):
+	global counting,backtrack
 	newwidth,newheight,z=followImg.shape
 	if x==39 and y==39:
 		return True
 	if np.all(followImg[y,x] == 0):
 		return False
 	if wasHere[y,x]:
-		correctPath[y,x]=(0,255,255)
-		cv2.imwrite("binarysolve%03d.png" % counting, correctPath)
-		counting+=1
 		return False
-	wasHere[y,x] = True
-	correctPath[y,x]=(255,0,0)
+	correctPath[np.where(wasHere == True)] = (255,255,0)
+	correctPath[y, x] = (0, 0, 255)
 	cv2.imwrite("binarysolve%03d.png" % counting, correctPath)
-	counting+=1
-	if x != 0 and mazeSolver(x-1,y):
-		correctPath[y,x] = (0,0,255)
+	counting += 1
+	wasHere[y,x]=True
+	if x != 0 and mazeSolver(x-1,y,0):
+		correctPath[y,x] = (255,0,0)
 		cv2.imwrite("binarysolve%03d.png" % counting, correctPath)
 		counting+=1
 		return True
-	if x != newwidth and mazeSolver(x+1,y):
-		correctPath[y,x] = (0,0,255)
+	if x != newwidth and mazeSolver(x+1,y,1):
+		correctPath[y,x] = (255,0,0)
 		cv2.imwrite("binarysolve%03d.png" % counting, correctPath)
 		counting+=1
 		return True
-	if y != 0 and mazeSolver(x, y-1):
-		correctPath[y,x] = (0,0,255)
+	if y != 0 and mazeSolver(x, y-1,2):
+		correctPath[y,x] = (255,0,0)
 		cv2.imwrite("binarysolve%03d.png" % counting, correctPath)
 		counting+=1
 		return True
-	if y != newheight and mazeSolver(x,y+1):
-		correctPath[y,x] = (0,0,255)
+	if y != newheight and mazeSolver(x,y+1,3):
+		correctPath[y,x] = (255,0,0)
 		print("Found")
 		cv2.imwrite("binarysolve%03d.png" % counting, correctPath)
 		counting+=1
 		return True
 	return False
-
-correctPath[height*2-1,width*2-1] = (0, 0, 255)
+correctPath[height*2-1,width*2-1] = (255, 0, 0)
 cv2.imwrite("binarysolve%03d.png" % counting, correctPath)
-mazeSolver(1,1)
+mazeSolver(1,1,9)
 #cv2.imwrite("maze.png",img)
